@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "formatters": {
+    "detailed": {
+      "format": "%(asctime)s - %(levelname)-8s - %(message)s",
+      "datefmt": "%Y-%m-%d %H:%M:%S"
+    },
+    "simple": {
+      "format": "%(levelname)-8s: %(message)s"
+    }
+  },
+  "handlers": {
+    "console": {
+      "class": "logging.StreamHandler",
+      "level": "DEBUG",
+      "formatter": "simple",
+      "stream": "ext://sys.stdout"
+    },
+    "file": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "INFO",
+      "formatter": "detailed",
+      "filename": "tests/python/file_log.log",
+      "maxBytes": 1048576,
+      "backupCount": 5
+    },
+    "error_file": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "ERROR",
+      "formatter": "detailed",
+      "filename": "tests/python/error_log.log",
+      "maxBytes": 1048576,
+      "backupCount": 5
+    }
+  },
+  "loggers": {
+    "general_logger": {
+      "handlers": ["console", "file"],
+      "level": "DEBUG",
+      "propagate": false
+    },
+    "error_logger": {
+      "handlers": ["error_file"],
+      "level": "ERROR",
+      "propagate": false
+    }
+  }
+}
