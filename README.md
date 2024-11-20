@@ -3,6 +3,7 @@
 This is the official codebase for configuring and setting up logging, providing a comprehensive logging solution for efficient and controlled logging in both development and production environments.
 
 **[2024.11.20]** Added support for customized log messages and dividers, enabling more flexibility in logging formats and styles.
+
 **[2024.11.07]** Initial release of the project, including multiple logging configuration templates and a setup script.
 
 > **Note**: Currently, Logging-Toolkit supports only Python. Future updates will include support for other programming languages to make the toolkit versatile for various development environments.
