@@ -2,6 +2,7 @@
 
 This is the official codebase for configuring and setting up logging, providing a comprehensive logging solution for efficient and controlled logging in both development and production environments.
 
+**[2024.11.20]** Added support for customized log messages and dividers, enabling more flexibility in logging formats and styles.
 **[2024.11.07]** Initial release of the project, including multiple logging configuration templates and a setup script.
 
 > **Note**: Currently, Logging-Toolkit supports only Python. Future updates will include support for other programming languages to make the toolkit versatile for various development environments.
@@ -22,7 +23,7 @@ This is the official codebase for configuring and setting up logging, providing 
    ```python
    from src.python.setup_logging import setup_logging
 
-   logger = setup_logging(config_file="src/python/general_logging.json", logger_name="general_logger")
+   logger = setup_logging(config_file="src/python/file_logging.json", logger_name="file_logger")
    logger.info("This is an info log entry.")
    ```
 
@@ -32,6 +33,70 @@ This is the official codebase for configuring and setting up logging, providing 
    logger = setup_logging(config_file="src/python/error_logging.json", handler_name="error", output_log_path="logs/custom/error.log")
    logger.error("This is an error log entry.")
    ```
+
+## Configuration
+
+Logging-Toolkit includes multiple pre-configured JSON templates to simplify logging setup. Below is an overview of the provided templates:
+
+### 1. `file_logging.json`
+
+- **Purpose**: Logs general application messages.
+- **Handlers**:
+  - `console`: Outputs logs to the terminal with a simple format.
+  - `file`: Writes detailed logs to `tests/python/file.log`, with support for log rotation.
+- **Levels**:
+  - `console`: Logs all messages starting from `DEBUG`.
+  - `file`: Logs all messages starting from `INFO`.
+- **Log Rotation**: Automatically rotates the log file when it exceeds 1MB, keeping up to 5 backups.
+
+#### Example Usage:
+
+```python
+logger = setup_logging(
+    config_file="src/python/file_logging.json",
+    logger_name="file_logger"
+)
+logger.info("Application started.")
+logger.debug("This is a debug log.")
+```
+
+### 2. `error_logging.json`
+
+- **Purpose**: Specifically logs error-level messages for easier error tracking.
+- **Handlers**:
+  - `error`: Writes error logs to `tests/python/error.log`, with support for log rotation.
+- **Levels**:
+  - Logs all messages starting from `ERROR`.
+- **Log Rotation**: Automatically rotates the log file when it exceeds 1MB, keeping up to 5 backups.
+
+#### Example Usage:
+
+```python
+logger = setup_logging(
+    config_file="src/python/error_logging.json",
+    logger_name="error_logger"
+)
+logger.error("An error occurred in the application.")
+```
+
+### Customization
+
+You can modify the provided JSON templates or create your own by adjusting:
+
+- **Log File Path**: Update the `filename` field in the `handlers` section.
+- **Log Levels**: Adjust the `level` field for handlers and loggers.
+- **Log Format**: Modify the `format` and `datefmt` fields under `formatters`.
+
+For example, to change the output path for `file.log`, provide the `output_log_path` parameter:
+
+```python
+logger = setup_logging(
+    config_file="src/python/file_logging.json",
+    handler_name="file",
+    output_log_path="logs/custom/file.log"
+)
+logger.info("Logging to a custom path.")
+```
 
 ## Features
 

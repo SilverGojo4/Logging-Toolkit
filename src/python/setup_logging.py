@@ -6,7 +6,98 @@ import json
 import logging
 import logging.config
 import os
-from typing import Optional
+from typing import Optional, cast
+
+
+class CustomLogger(logging.Logger):
+    """
+    A custom logger that includes a method to add dividers.
+    """
+
+    def add_divider(
+        self,
+        level: int = logging.INFO,
+        length: int = 10,
+        border: str = "+",
+        fill: str = "=",
+    ):
+        """
+        Add a divider line to the log at the specified level.
+
+        Parameters
+        ----------
+        level: int
+            The logging level at which the divider should be logged (e.g., logging.DEBUG, logging.INFO).    # pylint: disable=line-too-long
+        length: int
+            The number of fill characters in the divider.
+        border: str
+            The character used for the border of the divider.
+        fill: str
+            The character used to fill the divider.
+        """
+        divider = generate_divider(length, border, fill)
+        self.log(level, divider)
+
+    def log_with_borders(
+        self,
+        level: int,
+        message: str,
+        border: str = "|",
+        length: int = 50,
+    ):
+        """
+        Log a message with borders around it, truncating the message if it exceeds the specified length.    # pylint: disable=line-too-long
+        Adds a space between the border and the message.
+
+        Parameters
+        ----------
+        level: int
+            The logging level at which the message should be logged (e.g., logging.DEBUG, logging.INFO).    # pylint: disable=line-too-long
+        message: str
+            The message to log.
+        border: str
+            The character used for the borders.
+        length: int
+            The total length of the formatted message, including borders and spaces.
+        """
+        # Ensure the total length is sufficient for the borders and spaces
+        length = max(
+            length, 3
+        )  # Minimum length to accommodate borders, spaces, and at least one character
+
+        # Calculate the maximum length for the message
+        max_message_length = length - 2  # Subtract 4 for borders and spaces
+
+        # Truncate or pad the message to fit within max_message_length
+        formatted_message = message[:max_message_length].ljust(max_message_length)
+
+        # Format the message with borders and spaces
+        formatted_message = f"{border} {formatted_message} {border}"
+
+        # Log the formatted message
+        self.log(level, formatted_message)
+
+
+def generate_divider(length: int = 10, border: str = "+", fill: str = "=") -> str:
+    """
+    Generate a customizable divider line for logging.
+
+    Parameters
+    ----------
+    length: int
+        The number of fill characters in the divider.
+    border: str
+        The character used for the border of the divider.
+    fill: str
+        The character used to fill the divider.
+
+    Returns
+    ----------
+    str
+        The generated divider line, e.g., '+====+'.
+    """
+    length = max(length, 1)  # Ensure at least one fill character
+    return f"{border}{fill * length}{border}"
 
 
 def setup_logging(
@@ -14,35 +105,42 @@ def setup_logging(
     logger_name: str = __name__,
     handler_name: str = "file",
     output_log_path: Optional[str] = None,
-) -> logging.Logger:
+) -> CustomLogger:
     """
     Load and apply logging configuration from a JSON configuration file.
 
     Parameters
     ----------
-    config_file: `str`
+    config_file: str
         Path to the logging configuration file.
-    logger_name: `str`
+    logger_name: str
         Name of the logger.
-    handler_name: `str`
+    handler_name: str
         Name of the handler.
-    output_log_path: `Optional[str]`
+    output_log_path: Optional[str]
         Path to the output log file.
+    fixed_message_length: int
+        Fixed total length of the log message (excluding timestamp and log level).
 
     Returns
     ----------
-    logger: `logging.Logger`
+    CustomLogger
         The configured logger.
     """
+
+    # Set the global Logger class to CustomLogger
+    logging.setLoggerClass(CustomLogger)
 
     # Set up temporary logging configuration with formatted output
     logging.basicConfig(
         level=logging.WARNING,
-        format="%(levelname)-8s: %(message)s",
+        format="%(asctime)s - %(levelname)-8s -",
+        datefmt="%Y-%m-%d %H:%M:%S",
     )
 
-    # Create a temporary logger object for logging errors during the setup process
-    temp_logger = logging.getLogger("temporary_logger")
+    # Create a temporary logger for logging setup issues
+    temp_logger = logging.getLogger("setup_logging_temp_logger")
+    temp_logger.setLevel(logging.DEBUG)
 
     try:
         # Attempt to open and read the JSON configuration file
@@ -50,50 +148,65 @@ def setup_logging(
             # Load the JSON file content into a dictionary
             config_dict = json.load(file)
 
-            # Dynamically adjust the handler's file path (if output_log_path is provided)
+            # Dynamically adjust the output log path if provided
             if output_log_path:
-                config_dict["handlers"][handler_name]["filename"] = output_log_path
+                if handler_name in config_dict.get("handlers", {}):
+                    config_dict["handlers"][handler_name]["filename"] = output_log_path
+                    temp_logger.debug(
+                        "Handler '%s' filename dynamically set to: %s",
+                        handler_name,
+                        output_log_path,
+                    )
+                else:
+                    raise KeyError(
+                        f"Handler '{handler_name}' not found in configuration."
+                    )
 
-            # Attempt to retrieve the log file path from the specified handler in the configuration
-            log_path = (
-                config_dict.get("handlers", {})
-                .get(handler_name, {})
-                .get("filename", None)
-            )
-
-            # Check if a log path is specified
-            if log_path:
-
-                # Extract the directory part of the log file path
-                log_dir = os.path.dirname(log_path)
-
-                # Check if the directory does not exist
-                if not os.path.exists(log_dir):
-
-                    # Create the directory and any necessary parent directories if they don't exist
+            # Ensure the directory for the log file exists
+            if output_log_path:
+                log_dir = os.path.dirname(output_log_path)
+                if log_dir and not os.path.exists(log_dir):
                     os.makedirs(log_dir, exist_ok=True)
+                    temp_logger.debug("Created directory for log file: %s", log_dir)
 
-            # If all steps are successful, apply the logging configuration read from the JSON file
+            # Apply the logging configuration
             logging.config.dictConfig(config_dict)
 
-            # Retrieve and return the configured logger object
-            logger = logging.getLogger(logger_name)
+            # Get the logger
+            logger = cast(CustomLogger, logging.getLogger(logger_name))
+
             return logger
 
     # Catch errors that might occur during file opening or reading
     except (PermissionError, FileNotFoundError, json.JSONDecodeError) as file_error:
-        # Use the temporary logger to log the error message for debugging and troubleshooting
-        temp_logger.error("File error occurred: %s", file_error)
+        # Log detailed error message
+        temp_logger.error(
+            "File operation error: %s. Please check the following:\n"
+            "- Does the configuration file exist? Path: %s\n"
+            "- Does the file have the correct read permissions?\n"
+            "- Is the configuration file a valid JSON format?",
+            file_error,
+            config_file,
+        )
         raise
 
     # Catch errors that might occur during the configuration process
     except (ValueError, KeyError) as config_error:
-        # Use the temporary logger to log the error message
-        temp_logger.error("Configuration error occurred: %s", config_error)
+        # Log detailed error message
+        temp_logger.error(
+            "Configuration error: %s. Please check your JSON configuration file for:\n"
+            "- Missing required fields (e.g., handlers, loggers).\n"
+            "- Incorrect field values.",
+            config_error,
+        )
         raise
 
     # Catch any other unforeseen exceptions
     except Exception as unexpected_error:
-        # Use the temporary logger to log the error message
-        temp_logger.error("Unexpected error occurred: %s", unexpected_error)
+        # Log detailed error message
+        temp_logger.error(
+            "An unexpected error occurred: %s.\n"
+            "Please verify the configuration file, input parameters, and execution environment for potential issues.",  # pylint: disable=line-too-long
+            unexpected_error,
+        )
         raise
