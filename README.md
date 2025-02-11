@@ -2,6 +2,14 @@
 
 This is the official codebase for configuring and setting up logging, providing a comprehensive logging solution for efficient and controlled logging in both development and production environments.
 
+**[2025.02.10]** Major update:
+
+- **Introduced `CustomLogger`** with enhanced logging methods
+- **Added `log_with_borders()`** to format logs with a bordered display
+- **Enhanced `log_with_borders()` to handle multi-line messages and automatic word wrapping**
+- **Added `add_divider()`** to separate log sections for better readability
+- **Implemented full `pytest` testing to ensure stability**
+
 **[2024.12.31]** Initial release of the project, including multiple logging configuration templates and a setup script.
 
 > **Note**: Currently, Logging-Toolkit supports only Python. Future updates will include support for other programming languages to make the toolkit versatile for various development environments.
@@ -12,26 +20,26 @@ This is the official codebase for configuring and setting up logging, providing 
 
 2. Clone this repository:
 
-   ```bash
-   git clone git@github.com:SilverGojo4/Logging-Toolkit.git
-   cd Logging-Toolkit
-   ```
+```bash
+$ git clone git@github.com:SilverGojo4/Logging-Toolkit.git
+$ cd Logging-Toolkit
+```
 
 3. Use `setup_logging.py` in the `src/python` directory to configure logging:
 
-   ```python
-   from src.python.setup_logging import setup_logging
+```python
+from src.python.setup_logging import setup_logging
 
-   logger = setup_logging(input_config_file="src/python/general_logging.json", logger_name="general_logger")
-   logger.info("This is an info log entry.")
-   ```
+logger = setup_logging(input_config_file="src/python/general_logging.json", logger_name="general_logger")
+logger.info("This is an info log entry.")
+```
 
 4. Customize the log file path (optional):
 
-   ```python
-   logger = setup_logging(input_config_file="src/python/error_logging.json", handler_name="error", output_log_path="logs/custom/error.log")
-   logger.error("This is an error log entry.")
-   ```
+```python
+logger = setup_logging(input_config_file="src/python/error_logging.json", handler_name="error", output_log_path="logs/custom/error.log")
+logger.error("This is an error log entry.")
+```
 
 ## Configuration
 
@@ -102,6 +110,51 @@ logger.info("Logging to a custom path.")
 - **Versatile Logging Configurations**: Includes JSON templates for general and error logging, easy to modify and extend.
 - **Automatic Log Directory Creation**: Creates the directory if the specified log output path does not exist.
 - **Detailed Error Handling**: Uses a temporary logger to record potential errors during the setup process for easy troubleshooting.
+
+### CustomLogger: Advanced Logging
+
+Logging-Toolkit now includes a custom logger `CustomLogger`, extending Python’s built-in `logging.Logger` with additional functionality.
+
+#### Example Usage:
+
+- **Log messages with borders**: This method formats log messages with a bordered display for better readability.
+- **Supports automatic word wrapping**: Automatically wraps long messages into multiple lines without splitting words, preventing truncation and improving readability.
+- **Handles multi-line messages (`\n`)**: Preserves line breaks and formats each line properly within the bordered output.
+
+  ```python
+  logger.log_with_borders(level=logging.INFO, message="Logging Toolkit initialized!", border="*", length=30)
+  logger.log_with_borders(
+      level=logging.INFO,
+      message="This is a very long log message that will automatically wrap.",
+      border="|",
+      length=30
+  )
+  logger.log_with_borders(level=logging.INFO, message="Line 1\nLine 2\nLine 3", border="|", length=20)
+  ```
+
+  **Output**
+
+  ```
+  * Logging Toolkit initialized!  *
+  | This is a very long log    |
+  | message that will          |
+  | automatically wrap.        |
+  | Line 1           |
+  | Line 2           |
+  | Line 3           |
+  ```
+
+- **Separate log sections**: Inserts visual dividers to distinguish log sections, making it easier to analyze logs in large applications.
+
+  ```python
+  logger.add_divider(level=logging.INFO, length=30, border="#", fill="~")
+  ```
+
+  **Output**
+
+  ```
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  ```
 
 ## Contributing
 
