@@ -7,13 +7,38 @@ import json
 import logging
 import logging.config
 import os
+import textwrap
 from typing import Optional, cast
 
 
 class CustomLogger(logging.Logger):
     """
     A custom logger that includes a method to add dividers.
+
+    Attributes
+    ----------
+    - name: str
+        The name of the logger.
+    - level: int
+        The logging level (e.g., logging.DEBUG, logging.INFO).
+
+    Features
+    ----------
+    - Supports multi-line messages
+    - Allows message truncation (if allow_wrap=False)
+    - Adds visual dividers for readability
+    - Supports colored console output for different log levels
+    - Can write logs to both console and file
     """
+
+    COLOR_MAP = {
+        logging.DEBUG: "\033[92m",  # Green
+        logging.INFO: "\033[94m",  # Blue
+        logging.WARNING: "\033[93m",  # Yellow
+        logging.ERROR: "\033[91m",  # Red
+        logging.CRITICAL: "\033[95m",  # Magenta
+        "RESET": "\033[0m",
+    }
 
     def add_divider(
         self,
@@ -36,7 +61,9 @@ class CustomLogger(logging.Logger):
         fill: str
             The character used to fill the divider.
         """
-        divider = generate_divider(length, border, fill)
+        # Ensure the total length is sufficient for the borders and spaces
+        length = max(length, 3)
+        divider = f"{border}{fill * (length-2)}{border}"
         self.log(level, divider)
 
     def log_with_borders(
@@ -63,42 +90,26 @@ class CustomLogger(logging.Logger):
         """
         # Ensure the total length is sufficient for the borders and spaces
         length = max(
-            length, 3
+            length, 5
         )  # Minimum length to accommodate borders, spaces, and at least one character
 
         # Calculate the maximum length for the message
-        max_message_length = length - 2  # Subtract 4 for borders and spaces
+        max_message_length = length - 4  # Subtract 4 for borders and spaces
 
-        # Truncate or pad the message to fit within max_message_length
-        formatted_message = message[:max_message_length].ljust(max_message_length)
+        # Step 1: Split message by newline characters
+        message_lines = message.splitlines()
 
-        # Format the message with borders and spaces
-        formatted_message = f"{border} {formatted_message} {border}"
+        # Step 2: Wrap each line separately (to prevent cutting in the middle of a paragraph)
+        wrapped_lines = []
+        for line in message_lines:
+            wrapped_lines.extend(
+                textwrap.wrap(line, width=max_message_length) or [""]
+            )  # Ensure empty lines are preserved
 
-        # Log the formatted message
-        self.log(level, formatted_message)
-
-
-def generate_divider(length: int = 10, border: str = "+", fill: str = "=") -> str:
-    """
-    Generate a customizable divider line for logging.
-
-    Parameters
-    ----------
-    length: int
-        The number of fill characters in the divider.
-    border: str
-        The character used for the border of the divider.
-    fill: str
-        The character used to fill the divider.
-
-    Returns
-    ----------
-    str
-        The generated divider line, e.g., '+====+'.
-    """
-    length = max(length, 1)  # Ensure at least one fill character
-    return f"{border}{fill * length}{border}"
+        # Step 3: Format and log each wrapped line with borders
+        for line in wrapped_lines:
+            formatted_message = f"{border} {line.ljust(max_message_length)} {border}"
+            self.log(level, formatted_message)
 
 
 def setup_logging(

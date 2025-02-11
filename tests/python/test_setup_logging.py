@@ -157,8 +157,8 @@ def test_setup_logging_with_divider():
     validate_log_content(
         general_log_path,
         [
-            "+==========+",
-            "*--------------------*",
+            "+========+",
+            "*------------------*",
         ],
     )
 
@@ -166,7 +166,7 @@ def test_setup_logging_with_divider():
     validate_log_content(
         error_log_path,
         [
-            "#~~~~~~~~~~#",
+            "#~~~~~~~~#",
         ],
     )
 
@@ -204,25 +204,50 @@ def test_log_with_borders():
         output_log_path=error_log_path,
     )
 
-    # Test if file_logger is correctly configured
+    # Ensure loggers are correctly initialized
     assert file_logger is not None
-    file_logger.log_with_borders(logging.ERROR, "Another log", border="*", length=1)
+    assert error_logger is not None
+
+    # Test if file_logger is correctly configured
     file_logger.log_with_borders(
-        logging.DEBUG, "Short DEBUG message", border="|", length=20
-    )
+        level=logging.INFO, message="Hello", border="|", length=10
+    )  ### 1. Single-line message
     file_logger.log_with_borders(
-        logging.INFO, "Short INFO message", border="|", length=20
-    )
+        level=logging.INFO, message="Hi", border="|", length=1
+    )  ### 2. Short message (minimum length = 1)
     file_logger.log_with_borders(
-        logging.WARNING,
-        "This message is way too long for the specified length!",
+        level=logging.WARNING,
+        message="This is a long test message that should wrap correctly.",
         border="#",
-        length=30,
-    )
+        length=20,
+    )  ### 3. Long message wrapping test
+    file_logger.log_with_borders(
+        level=logging.INFO,
+        message="Line 1\nLine 2\nLine 3",
+        border="|",
+        length=15,
+    )  ### 4. Message containing newline characters (`\n`)
+    file_logger.log_with_borders(
+        level=logging.INFO,
+        message="Hello\n\nWorld",
+        border="|",
+        length=10,
+    )  ### 5. Message containing empty lines (`\n\n`)
+    file_logger.log_with_borders(
+        level=logging.INFO,
+        message="Supercalifragilisticexpialidocious",
+        border="|",
+        length=10,
+    )  ### 6. Single word longer than `length`
+    file_logger.log_with_borders(
+        level=logging.INFO, message="Custom border", border="@", length=20
+    )  ### 7. Custom border characters
+    file_logger.log_with_borders(
+        level=logging.DEBUG, message="", border="*", length=10
+    )  ### 8. Edge case: Empty string
 
     # Test if error_logger is correctly configured
-    assert error_logger is not None
-    error_logger.log_with_borders(logging.ERROR, "Another log", border="*", length=1)
+    error_logger.log_with_borders(logging.ERROR, "Log", border="*", length=1)
     error_logger.log_with_borders(
         logging.INFO, "Short INFO message", border="|", length=20
     )
@@ -235,6 +260,12 @@ def test_log_with_borders():
         border="#",
         length=30,
     )
+    error_logger.log_with_borders(
+        level=logging.CRITICAL,
+        message="Hello\n\nWorld",
+        border="|",
+        length=10,
+    )
 
     # Verify log files are generated
     for log_path in [general_log_path, error_log_path]:
@@ -244,9 +275,26 @@ def test_log_with_borders():
     validate_log_content(
         general_log_path,
         [
-            "* A *",
-            "| Short INFO message |",
-            "# This message is way too long #",
+            "| Hello  |",
+            "| H |",
+            "| i |",
+            "# This is a long   #",
+            "# test message     #",
+            "# that should wrap #",
+            "# correctly.       #",
+            "| Line 1      |",
+            "| Line 2      |",
+            "| Line 3      |",
+            "| Hello  |",
+            "|        |",
+            "| World  |",
+            "| Superc |",
+            "| alifra |",
+            "| gilist |",
+            "| icexpi |",
+            "| alidoc |",
+            "| ious   |",
+            "@ Custom border    @",
         ],
     )
 
@@ -254,9 +302,17 @@ def test_log_with_borders():
     validate_log_content(
         error_log_path,
         [
-            "* A *",
-            "| Short ERROR messag |",
-            "# This message is way too long #",
+            "* L *",
+            "* o *",
+            "* g *",
+            "| Short ERROR      |",
+            "| message          |",
+            "# This message is way too    #",
+            "# long for the specified     #",
+            "# length!                    #",
+            "| Hello  |",
+            "|        |",
+            "| World  |",
         ],
     )
 
