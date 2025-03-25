@@ -31,14 +31,26 @@ class CustomLogger(logging.Logger):
     - Can write logs to both console and file
     """
 
-    COLOR_MAP = {
-        logging.DEBUG: "\033[92m",  # Green
-        logging.INFO: "\033[94m",  # Blue
-        logging.WARNING: "\033[93m",  # Yellow
-        logging.ERROR: "\033[91m",  # Red
-        logging.CRITICAL: "\033[95m",  # Magenta
-        "RESET": "\033[0m",
-    }
+    def add_spacer(
+        self,
+        level: int = logging.INFO,
+        lines: int = 1,
+    ):
+        """
+        Add empty lines as spacers in the log.
+
+        Parameters
+        ----------
+        level: int
+            The logging level at which the spacer should be logged (e.g., logging.DEBUG, logging.INFO).
+        lines: int
+            The number of empty lines to insert in the log.
+        """
+        # Ensure the number of lines is at least 1
+        lines = max(lines, 1)
+
+        for _ in range(lines):
+            self.log(level, " ")  # Log an empty line
 
     def add_divider(
         self,
@@ -110,6 +122,37 @@ class CustomLogger(logging.Logger):
         for line in wrapped_lines:
             formatted_message = f"{border} {line.ljust(max_message_length)} {border}"
             self.log(level, formatted_message)
+
+    def log_title(
+        self,
+        title: str,
+        level: int = logging.INFO,
+        length: int = 40,
+        border: str = "#",
+    ):
+        """
+        Logs a formatted title with a surrounding border to visually separate log sections.
+
+        This method helps improve log readability by formatting important log sections
+        with a clear visual distinction.
+
+        Parameters
+        ----------
+        title: str
+            The title text to log.
+        level: int
+            The logging level at which the title should be logged (e.g., logging.DEBUG, logging.INFO).
+        length: int
+            The number of border characters before and after the title.
+            The total width of the formatted line will be `2 * length + len(title) + 2` (including spaces).
+        border: str
+            The character used for the borders.
+        """
+        # Ensure title fits within the specified length
+        formatted_title = f"{border * length} '{title}' {border * length}"
+
+        # Log the formatted title
+        self.log(level, formatted_title)
 
 
 def setup_logging(

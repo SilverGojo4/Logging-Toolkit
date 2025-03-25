@@ -323,6 +323,103 @@ def test_log_with_borders():
         os.remove(error_log_path)
 
 
+# Define the test function for add_spacer
+def test_add_spacer():
+    """
+    Tests the add_spacer method in CustomLogger to ensure correct spacing in the log output.
+    """
+    # Use test configuration files
+    general_config_path = os.path.join(BASE_PATH, "src/python/general_logging.json")
+    general_log_path = os.path.join(BASE_PATH, "logs/general.log")
+
+    # Execute the setup_logging function to configure file_logger
+    file_logger = setup_logging(
+        input_config_file=general_config_path,
+        logger_name="general_logger",
+        handler_name="general",
+        output_log_path=general_log_path,
+    )
+
+    # Ensure file_logger is correctly configured
+    assert file_logger is not None
+
+    # Test add_spacer functionality
+    file_logger.info("Step 1: Data Preprocessing")
+    file_logger.add_spacer()  # Insert 1 empty line
+    file_logger.info("Step 2: Model Training")
+    file_logger.add_spacer(lines=2)  # Insert 2 empty lines
+    file_logger.info("Step 3: Model Evaluation")
+    file_logger.add_spacer(lines=3)  # Insert 3 empty lines
+    file_logger.info("Final Step: Report Generation")
+
+    # Verify log files are generated
+    assert os.path.exists(general_log_path), f"Log file not found: {general_log_path}"
+
+    # Verify log file content
+    validate_log_content(
+        general_log_path,
+        [
+            "Step 1: Data Preprocessing",
+            "",
+            "Step 2: Model Training",
+            "",
+            "",
+            "Step 3: Model Evaluation",
+            "",
+            "",
+            "",
+            "Final Step: Report Generation",
+        ],
+    )
+
+    # Clean up log file (optional)
+    if os.path.exists(general_log_path):
+        os.remove(general_log_path)
+
+
+# Define the test function for log_title
+def test_log_title():
+    """
+    Tests the log_title method in CustomLogger to ensure correct formatted title output.
+    """
+    # Use test configuration files
+    general_config_path = os.path.join(BASE_PATH, "src/python/general_logging.json")
+    general_log_path = os.path.join(BASE_PATH, "logs/general.log")
+
+    # Execute the setup_logging function to configure file_logger
+    file_logger = setup_logging(
+        input_config_file=general_config_path,
+        logger_name="general_logger",
+        handler_name="general",
+        output_log_path=general_log_path,
+    )
+
+    # Ensure file_logger is correctly configured
+    assert file_logger is not None
+
+    # Test log_title functionality
+    file_logger.log_title("AMP - Data Collect")
+    file_logger.log_title("Processing Data", length=30, border="*")
+    file_logger.log_title("Training Model", length=25, border="=")
+
+    # Verify log files are generated
+    assert os.path.exists(general_log_path), f"Log file not found: {general_log_path}"
+
+    # Verify file_logger log file content
+    validate_log_content(
+        general_log_path,
+        [
+            "#" * 40 + " 'AMP - Data Collect' " + "#" * 40,
+            "*" * 30 + " 'Processing Data' " + "*" * 30,
+            "=" * 25 + " 'Training Model' " + "=" * 25,
+        ],
+    )
+
+    # Clean up log file (optional)
+    if os.path.exists(general_log_path):
+        os.remove(general_log_path)
+
+
 # Run the test if this script is executed as the main program
 if __name__ == "__main__":
     pytest.main()

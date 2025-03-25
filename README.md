@@ -2,6 +2,11 @@
 
 This is the official codebase for configuring and setting up logging, providing a comprehensive logging solution for efficient and controlled logging in both development and production environments.
 
+**[2025.03.25]** New features added:
+
+- **Added `log_title()`** to format structured log section titles.
+- **Added `add_spacer()`** to insert blank lines for improved log readability.
+
 **[2025.02.10]** Major update:
 
 - **Introduced `CustomLogger`** with enhanced logging methods
