@@ -409,9 +409,9 @@ def test_log_title():
     validate_log_content(
         general_log_path,
         [
-            "#" * 40 + " 'AMP - Data Collect' " + "#" * 40,
-            "*" * 30 + " 'Processing Data' " + "*" * 30,
-            "=" * 25 + " 'Training Model' " + "=" * 25,
+            "#" * 40 + " AMP - Data Collect " + "#" * 40,
+            "*" * 30 + " Processing Data " + "*" * 30,
+            "=" * 25 + " Training Model " + "=" * 25,
         ],
     )
 

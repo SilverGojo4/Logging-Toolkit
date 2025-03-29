@@ -149,7 +149,7 @@ class CustomLogger(logging.Logger):
             The character used for the borders.
         """
         # Ensure title fits within the specified length
-        formatted_title = f"{border * length} '{title}' {border * length}"
+        formatted_title = f"{border * length} {title} {border * length}"
 
         # Log the formatted title
         self.log(level, formatted_title)
