@@ -3,10 +3,13 @@
 Module for configuring and setting up logging.
 """
 
+import datetime
 import json
 import logging
 import logging.config
 import os
+import platform
+import sys
 import textwrap
 from typing import Optional, cast
 
@@ -153,6 +156,69 @@ class CustomLogger(logging.Logger):
 
         # Log the formatted title
         self.log(level, formatted_title)
+
+    def log_pipeline_initialization(
+        self,
+        project_name: str,
+        level: int = logging.INFO,
+        line_width: int = 100,
+        border: str = "║",
+    ):
+        """
+        Logs pipeline metadata including project name, platform, CLI command, etc., in a formatted block.
+
+        Parameters
+        ----------
+        project_name : str
+            The name of the pipeline or project.
+        level : int
+            Logging level.
+        line_width : int
+            Width of the bordered log block.
+        border : str
+            Border character for formatting the block.
+        """
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        python_version = sys.version.split()[0]
+        cwd = os.getcwd()
+        os_platform = platform.system()
+
+        # Metadata part
+        metadata_lines = [
+            f"Project Name      : '{project_name}'",
+            f"Working Directory : '{cwd}'",
+            f"Platform          : '{os_platform}'",
+            f"Execution Time    : {now}",
+            f"Python Version    : {python_version}",
+        ]
+
+        # CLI command part
+        cli_command_lines = ["", "CLI command used  :"]
+        cli_command_lines.append(f"python {sys.argv[0]} \\")
+        i = 1
+        while i < len(sys.argv):
+            if (
+                sys.argv[i].startswith("-")
+                and i + 1 < len(sys.argv)
+                and not sys.argv[i + 1].startswith("-")
+            ):
+                cli_command_lines.append(f"  {sys.argv[i]} {sys.argv[i+1]} \\")
+                i += 2
+            else:
+                cli_command_lines.append(f"  {sys.argv[i]} \\")
+                i += 1
+        if cli_command_lines[-1].endswith(" \\"):
+            cli_command_lines[-1] = cli_command_lines[-1][:-2]
+
+        # Combine and print
+        self.add_divider(level=level, length=line_width, border="+", fill="=")
+        self.log_with_borders(
+            level=level,
+            message="\n".join(metadata_lines + cli_command_lines),
+            border=border,
+            length=line_width,
+        )
+        self.add_divider(level=level, length=line_width, border="+", fill="=")
 
 
 def setup_logging(
