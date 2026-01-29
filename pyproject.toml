@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "logging-toolkit"
+version = "0.1.0"
+description = "A reusable logging toolkit with CustomLogger and JSON-based configuration."
+readme = "README.md"
+requires-python = ">=3.9"
+
+authors = [
+    { name = "Silver Gojo", email = "SilverGojo4@gmail.com" }
+]
+
+license = { text = "MIT" }
+
+keywords = [
+    "logging",
+    "python-logging",
+    "custom-logger",
+    "toolkit",
+    "cli",
+]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Logging",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+
+[tool.setuptools]
+packages = ["logging_toolkit"]
+
+
+[tool.setuptools.package-data]
+logging_toolkit = [
+    "configs/*.json"
+]

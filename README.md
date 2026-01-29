@@ -1,6 +1,22 @@
 # Logging-Toolkit
 
-This is the official codebase for configuring and setting up logging, providing a comprehensive logging solution for efficient and controlled logging in both development and production environments.
+A lightweight and extensible Python logging toolkit designed for CLI tools, pipelines, and long-running batch systems.
+
+Logging-Toolkit provides:
+
+- A reusable `CustomLogger` with structured logging utilities
+- JSON-based logging configuration
+- Clean separation between logging backend and application logic
+- Pipeline-friendly logging initialization
+
+**[2026.01.28]** Major refactor and package restructuring:
+
+- **Reorganized project as a reusable Python package (`logging_toolkit`)**
+- **Separated `CustomLogger` into a dedicated module**
+- **Standardized logging backend initialization via `setup_logging()`**
+- **Moved logging configuration templates into `logging_toolkit/configs/`**
+- **Removed legacy script-based layout (`src/python`)**
+- **Prepared the project for integration as a dependency in larger systems**
 
 **[2025.03.25]** New features added:
 
@@ -17,104 +33,69 @@ This is the official codebase for configuring and setting up logging, providing 
 
 **[2024.12.31]** Initial release of the project, including multiple logging configuration templates and a setup script.
 
-> **Note**: Currently, Logging-Toolkit supports only Python. Future updates will include support for other programming languages to make the toolkit versatile for various development environments.
+## Installation
 
-## Installation and Usage
+Logging-Toolkit is designed to be used as a **reusable Python dependency**, suitable for integration into pipeline systems, CLI tools, and research frameworks.
 
-1. Ensure Python version 3.8 or later is installed.
+### Requirements
 
-2. Clone this repository:
+- Python **3.9 or later**
+
+### Install as a Git submodule
+
+This method is recommended when using Logging-Toolkit as a git submodule or a development dependency.
 
 ```bash
-$ git clone git@github.com:SilverGojo4/Logging-Toolkit.git
-$ cd Logging-Toolkit
+git submodule add git@github.com:SilverGojo4/Logging-Toolkit.git external/logging-toolkit
+pip install -e external/logging-toolkit
 ```
 
-3. Use `setup_logging.py` in the `src/python` directory to configure logging:
+### Import Usage
+
+Once installed, Logging-Toolkit can be imported as a standard Python package:
 
 ```python
-from src.python.setup_logging import setup_logging
-
-logger = setup_logging(input_config_file="src/python/general_logging.json", logger_name="general_logger")
-logger.info("This is an info log entry.")
+from logging_toolkit.setup_logging import setup_logging
+from logging_toolkit.logger import CustomLogger
 ```
 
-4. Customize the log file path (optional):
-
-```python
-logger = setup_logging(input_config_file="src/python/error_logging.json", handler_name="error", output_log_path="logs/custom/error.log")
-logger.error("This is an error log entry.")
-```
-
-## Configuration
-
-Logging-Toolkit includes multiple pre-configured JSON templates to simplify logging setup. Below is an overview of the provided templates:
-
-### 1. `general_logging.json`
-
-- **Purpose**: Logs general application messages.
-- **Handlers**:
-  - `console`: Outputs logs to the terminal with a simple format.
-  - `general`: Writes detailed logs to `tests/python/general.log`, with support for log rotation.
-- **Levels**:
-  - `console`: Logs all messages starting from `DEBUG`.
-  - `general`: Logs all messages starting from `INFO`.
-- **Log Rotation**: Automatically rotates the log file when it exceeds 1MB, keeping up to 5 backups.
-
-#### Example Usage:
+### Typical Usage Pattern
 
 ```python
 logger = setup_logging(
-    input_config_file="src/python/general_logging.json",
-    logger_name="general_logger"
-)
-logger.info("Application started.")
-logger.debug("This is a debug log.")
-```
-
-### 2. `error_logging.json`
-
-- **Purpose**: Specifically logs error-level messages for easier error tracking.
-- **Handlers**:
-  - `error`: Writes error logs to `tests/python/error.log`, with support for log rotation.
-- **Levels**:
-  - Logs all messages starting from `ERROR`.
-- **Log Rotation**: Automatically rotates the log file when it exceeds 1MB, keeping up to 5 backups.
-
-#### Example Usage:
-
-```python
-logger = setup_logging(
-    input_config_file="src/python/error_logging.json",
-    logger_name="error_logger"
-)
-logger.error("An error occurred in the application.")
-```
-
-### Customization
-
-You can modify the provided JSON templates or create your own by adjusting:
-
-- **Log File Path**: Update the `filename` field in the `handlers` section.
-- **Log Levels**: Adjust the `level` field for handlers and loggers.
-- **Log Format**: Modify the `format` and `datefmt` fields under `formatters`.
-
-For example, to change the output path for `general.log`, provide the `output_log_path` parameter:
-
-```python
-logger = setup_logging(
-    input_config_file="src/python/general_logging.json",
+    input_config_file="logging_config.json",
+    logger_name="app_logger",
     handler_name="general",
-    output_log_path="logs/custom/general.log"
+    output_log_path="logs/run.log",
 )
-logger.info("Logging to a custom path.")
+
+logger.info("Application started")
+logger.log_title("Initialization")
 ```
+
+## Design Philosophy
+
+Logging-Toolkit is intentionally designed with the following principles:
+
+- **No global state assumptions**
+  Logging is initialized explicitly by the application entry point.
+
+- **Configuration over code**
+  Logging structure is defined via JSON configuration rather than hardcoded logic.
+
+- **Backend-only responsibility**
+  This package does not manage runtime context, pipeline state, or execution flow.
+
+- **Framework-friendly integration**
+  Designed to be embedded within CLI tools, batch systems, and pipeline runtimes.
+
+This makes Logging-Toolkit suitable as a logging backend for larger systems rather than a standalone application.
 
 ## Features
 
 - **Versatile Logging Configurations**: Includes JSON templates for general and error logging, easy to modify and extend.
 - **Automatic Log Directory Creation**: Creates the directory if the specified log output path does not exist.
-- **Detailed Error Handling**: Uses a temporary logger to record potential errors during the setup process for easy troubleshooting.
+- **Explicit error surfacing**: Configuration errors are raised directly to ensure early failure and reproducibility.
 
 ### CustomLogger: Advanced Logging
 
