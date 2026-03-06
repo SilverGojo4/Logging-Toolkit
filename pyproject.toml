@@ -8,7 +8,7 @@ name = "logging-toolkit"
 version = "0.1.0"
 description = "A reusable logging toolkit with CustomLogger and JSON-based configuration."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.8"
 
 authors = [
     { name = "Silver Gojo", email = "SilverGojo4@gmail.com" }
@@ -29,15 +29,14 @@ classifiers = [
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Logging",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
 
-
 [tool.setuptools]
 packages = ["logging_toolkit"]
-
 
 [tool.setuptools.package-data]
 logging_toolkit = [
